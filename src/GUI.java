@@ -13,7 +13,7 @@ public class GUI {
 
         //File containing the description of the planning domain-problem
         String fileName = args.length > 0 ? args[0] : "testes/climber-GROUNDED-1.txt";
-        String type = args.length > 1 ? args[1] : "propplan"; //"ritanen" or "propplan"
+        String type = args.length > 1 ? args[1] : "ritanen"; //"ritanen" or "propplan"
         int nodenum = Integer.parseInt(args.length > 2 ? args[2] : "999999");
         int cachesize = Integer.parseInt(args.length > 3 ? args[3] : "9999");
 
@@ -22,14 +22,14 @@ public class GUI {
 
         System.out.println(fileName.substring(fileName.lastIndexOf("/") + 1, fileName.lastIndexOf(".")));
 
-		/*Performs progressive and regressive search*/
+		/* Performs progressive and regressive search */
 
         Regression r = new Regression(model);
         System.out.println("\nRegressive search by ["+type+"]");
         r.weakPlan();
 
-        Progression p = new Progression(model);
-		System.out.println("\nProgressive search");
-		p.planForward();
+//        Progression p = new Progression(model);
+//		System.out.println("\nProgressive search");
+//		p.planForward();
     }
 }

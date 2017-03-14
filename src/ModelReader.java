@@ -120,12 +120,4 @@ class ModelReader {
         return cre.getConstraintBDD();
     }
 
-    BDD getPosAcepExcuses() {
-        return cre.getExcusesBDD();
-    }
-
-    BDD getPosAcepGoalExcuses() {
-        return cre.getExcusesGoalBDD();
-    }
-
 }

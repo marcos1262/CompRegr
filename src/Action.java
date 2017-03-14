@@ -75,14 +75,14 @@ class Action {
 		return changeSet;
 	}
 	
-	/* The condition (E) is defined for each action and proposition */
+	/* The condition (EPC) is defined for each action and proposition */
 	private void fillEpcTable(){
 		BDDFactory factory = precondition.getFactory();
 		boolean epcP, epcNotP;
 		BDD prop, negprop;
 
-		/*For each propositional value, computes the EPC.*/
-		/*and for each effect*/
+		/* For each propositional value, computes the EPC. */
+			/* and for each effect */
 		for (int i = 0; i < effects.size(); i++) {
 			epcPTable.add(new ArrayList<>());
 			epcNotPTable.add(new ArrayList<>());

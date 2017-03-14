@@ -1,5 +1,4 @@
 import java.util.Set;
-import java.util.Vector;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -9,7 +8,6 @@ class Regression{
 	private BDD goalState;
 	private BDD initialState;
 	private BDD constraints;
-	private BDD acepExcuses;
 	private String type;
 	private boolean strongPlan;
 	private int qtdVar;
@@ -19,7 +17,6 @@ class Regression{
 		this.initialState = model.getInitialStateBDD();
 		this.goalState = model.getGoalSpec();		
 		this.constraints = model.getConstraints();
-		this.acepExcuses = model.getPosAcepExcuses();
 		this.qtdVar = model.getVarTable2().size();
 		this.type = model.getType();
 	}
@@ -48,7 +45,6 @@ class Regression{
 		BDD Z = reached.id(); // Only new states reached	
 		BDD aux;	
 		int i = 0;
-		Vector<BDD> excusesVec = new Vector<>();
 		
 		while(!Z.isZero()){
 			System.out.println("Iteration: "+i);
@@ -63,7 +59,6 @@ class Regression{
 			
 			aux = Z;
 			Z = Z.apply(reached, BDDFactory.diff); // The new reachable states in this layer
-			excusesVec.add(i,Z.id());
 			aux.free();
 			
 			aux = reached;
@@ -79,42 +74,11 @@ class Regression{
 		
 		System.out.println("The problem is unsolvable.");
 
-		/*Finding acceptable excuses */
-		BDD AExcuses = reached.and(acepExcuses);
-		System.out.println("The initial state is:");
-		initialState.printSet();
-		if(AExcuses.toString().equals("")){
-			System.out.println("There are not found modifications for the initial state.");
-			return false;
-		}else{
-			System.out.println("(Metric M1) The modifications for the initial state are:");
-			AExcuses.printSet();
-		}
-		
-		/*Finding good excuses*/
-		BDD GExcuses;
-		for (int j = i-1; j >= 0; j--) { //more distance from the goal.
-			GExcuses = excusesVec.get(j).and(AExcuses); 
-			if(!GExcuses.toString().equals("")){
-				System.out.println("(Metric M21) The modifications for the initial state are reached in layer: " + j); 
-				GExcuses.printSet();
-				break;
-			}
-		}
-		
-		for (int layer = 1; layer < i; layer++) { //nearest from the goal.
-			GExcuses = excusesVec.get(layer).and(AExcuses);
-			if(!GExcuses.toString().equals("")){
-				System.out.println("(Metric M22) The modifications for the initial state are reached in layer: " + layer);
-				GExcuses.printSet();
-				return false;
-			}
-		}
 		return false;
 	}
 		
 	/* Non-Deterministic Regression of a formula by a set of actions */
-	BDD regression(BDD formula){
+	private BDD regression(BDD formula){
 		BDD reg = formula.getFactory().zero(),
 			aux;
 
@@ -143,7 +107,7 @@ class Regression{
 	}
 	
 	/* Propplan regression based on action: Qbf based computation */
-	BDD regressionQbf(BDD Y, Action a) {
+	private BDD regressionQbf(BDD Y, Action a) {
 		BDD reg, aux;
 
 		BDD effBDD = a.getFactory().zero();
@@ -179,7 +143,7 @@ class Regression{
  	}
 	
 	/*Ritanen's regression based on action: epc computation */
-	BDD regressionEpc(BDD formula, Action a){
+	private BDD regressionEpc(BDD formula, Action a){
 		BDDFactory factory = a.getFactory();
 		Boolean epcP, epcNotP;
 
