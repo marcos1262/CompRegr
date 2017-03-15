@@ -12,7 +12,7 @@ class Action {
 	/*For PropPlan Regression */
 	private BDD change;
 
-	/*For Ritanen's regression */
+	/*For Rintanen's regression */
 	private ArrayList<ArrayList<BDD>> effectVec;
 	private ArrayList<ArrayList<Boolean>> epcPTable = new ArrayList<>();
 	private ArrayList<ArrayList<Boolean>> epcNotPTable = new ArrayList<>();
@@ -36,7 +36,7 @@ class Action {
 		change = getFactory().one();
 		Set<String> changeSet = createChangeSet(eff);
 		
-		if(pType.equals("ritanen")){ //computes epc
+		if(pType.equals("rintanen") || pType.equals("rintanen_rec")){ //computes epc
 			effectVec = cre.createEffectsVec(eff);
 			fillEpcTable();		
 		}else if(pType.equals("propplan")){ //compute change set

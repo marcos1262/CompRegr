@@ -40,10 +40,10 @@ class Regression{
 	}
 
 	/* Backward search from the goal state, towards initial state. */
-	boolean planBackward(){
+	private boolean planBackward(){
 		BDD reached = goalState.id(); //accumulates the reached set of states.
 		BDD Z = reached.id(); // Only new states reached	
-		BDD aux;	
+		BDD aux;
 		int i = 0;
 		
 		while(!Z.isZero()){
@@ -86,15 +86,19 @@ class Regression{
 //			System.out.println("Ação: "+a.getName());
 
 			// The constraints will complete the variables in the returned states
+			formula = formula.and(constraints);
 			switch (type) {
-				case "ritanen":
+				case "rintanen":
 					aux = regressionEpc(formula, a);
+					break;
+				case "rintanen_rec":
+					aux = regressionEpcRec(formula, a);
 					break;
 				case "propplan":
 					aux = regressionQbf(formula, a);
 					break;
 				default:
-					throw new RuntimeException("Invalid regression type! (ritanen or propplan)");
+					throw new RuntimeException("Invalid regression type! (rintanen, rintanen_rec or propplan)");
 			}
 			aux = aux.and(constraints);
 
@@ -142,7 +146,7 @@ class Regression{
 		return  reg;
  	}
 	
-	/*Ritanen's regression based on action: epc computation */
+	/* Rintanen's regression based on action: epc computation */
 	private BDD regressionEpc(BDD formula, Action a){
 		BDDFactory factory = a.getFactory();
 		Boolean epcP, epcNotP;
@@ -189,6 +193,69 @@ class Regression{
 		formulaR.free();
 		return reg;
 	}
-	
+
+	/* Recursive Rintanen's regression based on action */
+	private BDD regressionEpcRec(BDD formula, Action a){
+		BDDFactory factory = a.getFactory();
+		BDD formulaR, aux;
+
+		if (strongPlan) formulaR = factory.one();
+		else formulaR = factory.zero();
+
+		/* For each effect */
+		for (int i = 0; i < a.getEffects().size(); i++) {
+			aux = formula.id();
+			aux = regressionEpcRec(aux, a, i);
+
+			if (strongPlan) {
+				formulaR.andWith(aux);
+
+				if (formulaR.equals(factory.zero())) {
+					return formulaR;
+				}
+			}else formulaR.orWith(aux);
+		}
+
+		return formulaR;
+	}
+
+	private BDD regressionEpcRec (BDD formula, Action a, int effect) {
+		BDDFactory factory = a.getFactory();
+		BDD firstTerm, secondTerm;
+		boolean epcP, epcNotP;
+
+		if (isDisjunction(formula)) {
+			firstTerm = formula.satOne();
+			secondTerm = formula.and(firstTerm.not());
+			formula = regressionEpcRec(firstTerm, a, effect).or(regressionEpcRec(secondTerm, a, effect));
+		}else if (isConjunction(formula)) {
+
+			for(int j = 0; j < qtdVar; j++){
+
+				epcP = a.getEpcPTable().get(effect).get(j);
+				epcNotP = a.getEpcNotPTable().get(effect).get(j);
+
+				if(epcP){
+					formula.restrictWith(factory.ithVar(j));
+				}else if(epcNotP){
+					formula.restrictWith(factory.nithVar(j));
+				}
+
+				if(formula.equals(factory.zero())) {
+					return formula;
+				}
+			}
+		}
+		return formula;
+	}
+
+	private boolean isDisjunction (BDD formula) {
+		return formula.pathCount() > 1;
+	}
+
+	private boolean isConjunction (BDD formula) {
+		return formula.pathCount() == 1;
+	}
+
 }
 	
